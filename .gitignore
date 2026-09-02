@@ -1,0 +1,47 @@
+# ── Virtual Environment ───────────────────────────────────────────────────────
+venv/
+env/
+.env/
+.venv/
+
+# ── Python Cache ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+
+# ── Build / Distribution ──────────────────────────────────────────────────────
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+# ── Pip ───────────────────────────────────────────────────────────────────────
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── Database (user data — never commit this) ──────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Exports (generated files) ─────────────────────────────────────────────────
+lakshya_export.csv
+lakshya_export.md
+
+# ── OS Files ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log

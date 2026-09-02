@@ -1,0 +1,1 @@
+# My Goals\n\n- [ ] **Learn Rust** (yearly) - 50%\n- [x] **Drink Water** (daily) - 0%\n- [ ] **BS on answers completed by eod** (daily) - 0%\n
