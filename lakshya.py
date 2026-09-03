@@ -488,6 +488,14 @@ def export(fmt):
                 f.write(f"- {cb} **{g['title']}** ({g['type']}) — {g['progress']}%\n")
         rprint(f"[green]Exported to [bold]{path}[/bold][/green]")
 
+import finance_cli
+import reminders_cli
+import review
+
+cli.add_command(finance_cli.finance_group, name="finance")
+cli.add_command(reminders_cli.reminders_group, name="remind")
+cli.add_command(review.review_group, name="review")
+
 
 if __name__ == "__main__":
     cli()

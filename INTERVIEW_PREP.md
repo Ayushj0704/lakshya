@@ -9,7 +9,7 @@
 
 Practice saying this out loud:
 
-> "Lakshya is a terminal-based goal management engine I built in Python. I noticed that every mainstream productivity app either requires a subscription, only works online, or is bloated with features I don't need. So I built a minimalist CLI tool that lets you manage daily habits, weekly goals, and long-term yearly objectives — entirely offline, with a local SQLite database. It has an interactive shell, a GitHub-style activity heatmap, streak tracking, a Pomodoro timer, a college timetable manager with clash detection, and a dancing cat animation when you complete a goal."
+> "Lakshya is a terminal-based goal management engine I built in Python. I noticed that every mainstream productivity app either requires a subscription, only works online, or is bloated with features I don't need. So I built a minimalist CLI tool that lets you manage daily habits, weekly goals, and long-term yearly objectives — entirely offline, with a local SQLite database. It has an interactive shell, a GitHub-style activity heatmap, streak tracking, a Pomodoro timer, a college timetable manager with clash detection, a Finance tracker, Windows OS task scheduler reminders, and even a FastAPI web backend. It also has a dancing cat animation when you complete a goal."
 
 The last part always gets a laugh and makes you memorable.
 

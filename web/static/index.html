@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lakshya Dashboard</title>
+  <style>
+    /* ------------------------------------------------------------------ */
+    /* Reset + base                                                         */
+    /* ------------------------------------------------------------------ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f0f1a;
+      --surface: #1a1a2e;
+      --card:    #16213e;
+      --border:  #2a2a4a;
+      --accent:  #7c3aed;
+      --accent2: #a855f7;
+      --green:   #22c55e;
+      --yellow:  #eab308;
+      --red:     #ef4444;
+      --cyan:    #06b6d4;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --radius:  10px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent2); text-decoration: none; }
+    button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+
+    /* ------------------------------------------------------------------ */
+    /* Auth overlay                                                         */
+    /* ------------------------------------------------------------------ */
+    #auth-overlay {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.85);
+      z-index: 999;
+    }
+
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      width: 360px;
+      box-shadow: 0 8px 40px rgba(124,58,237,0.25);
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .auth-logo h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .auth-logo p { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+    .auth-tab {
+      flex: 1; padding: 0.55rem; text-align: center;
+      background: var(--card); color: var(--muted); font-size: 0.9rem;
+      transition: background 0.2s, color 0.2s;
+    }
+    .auth-tab.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input {
+      width: 100%; padding: 0.6rem 0.8rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--accent); outline: none; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      padding: 0.6rem 1.2rem; border-radius: 6px;
+      font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-danger  { background: var(--red);    color: #fff; }
+    .btn-danger:hover { opacity: 0.88; }
+    .btn-success { background: var(--green);  color: #111; }
+    .btn-success:hover { opacity: 0.88; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+    .btn-full { width: 100%; }
+
+    .auth-error {
+      background: rgba(239,68,68,0.15); border: 1px solid var(--red);
+      border-radius: 6px; padding: 0.6rem 0.8rem;
+      color: var(--red); font-size: 0.85rem; margin-bottom: 1rem; display: none;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* App layout                                                           */
+    /* ------------------------------------------------------------------ */
+    #app { display: none; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.8rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-logo { font-size: 1.25rem; font-weight: 700; color: var(--accent2); letter-spacing: 2px; }
+    .header-user { display: flex; align-items: center; gap: 0.8rem; }
+    .header-user span { font-size: 0.85rem; color: var(--muted); }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+    /* ------------------------------------------------------------------ */
+    /* Grid / cards                                                         */
+    /* ------------------------------------------------------------------ */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    @media(max-width:700px){ .grid-2,.grid-3 { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+    }
+    .card-title {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title span { color: var(--accent2); font-size: 0.7rem; cursor: pointer; }
+    .card-title span:hover { text-decoration: underline; }
+
+    /* stat cards */
+    .stat-val { font-size: 2rem; font-weight: 700; color: var(--accent2); }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ------------------------------------------------------------------ */
+    /* Goals table                                                          */
+    /* ------------------------------------------------------------------ */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      text-align: left; padding: 0.5rem 0.7rem;
+      color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+    tbody tr:hover { background: rgba(124,58,237,0.07); }
+    tbody td { padding: 0.55rem 0.7rem; }
+
+    .badge {
+      display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px;
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .badge-daily   { background: rgba(34,197,94,0.15);  color: var(--green); }
+    .badge-weekly  { background: rgba(6,182,212,0.15);  color: var(--cyan);  }
+    .badge-monthly { background: rgba(234,179,8,0.15);  color: var(--yellow);}
+    .badge-yearly  { background: rgba(239,68,68,0.15);  color: var(--red);   }
+    .badge-done    { background: rgba(34,197,94,0.15);  color: var(--green); }
+    .badge-pending { background: rgba(100,116,139,0.15);color: var(--muted); }
+
+    .progress-bar-wrap { height: 6px; background: var(--border); border-radius: 3px; min-width: 60px; }
+    .progress-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.3s; }
+
+    .actions { display: flex; gap: 0.3rem; }
+
+    /* ------------------------------------------------------------------ */
+    /* Add goal form                                                        */
+    /* ------------------------------------------------------------------ */
+    .add-form { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-end; }
+    .add-form .form-group { margin-bottom: 0; }
+    .add-form input, .add-form select {
+      padding: 0.55rem 0.75rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-size: 0.875rem;
+    }
+    .add-form input:focus, .add-form select:focus { border-color: var(--accent); outline: none; }
+    .add-form select option { background: var(--surface); }
+
+    /* ------------------------------------------------------------------ */
+    /* Heatmap                                                              */
+    /* ------------------------------------------------------------------ */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(30, 1fr);
+      gap: 3px;
+    }
+    .hm-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      background: var(--border);
+      cursor: default;
+      transition: transform 0.1s;
+      position: relative;
+    }
+    .hm-cell:hover { transform: scale(1.4); z-index: 2; }
+    .hm-cell[data-count="0"] { background: var(--border); }
+    .hm-cell[data-count="1"] { background: #166534; }
+    .hm-cell[data-count="2"] { background: #15803d; }
+    .hm-cell[data-count="3"] { background: #16a34a; }
+    .hm-cell[data-count="4"] { background: #4ade80; }
+
+    .hm-legend { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.6rem; font-size: 0.72rem; color: var(--muted); }
+    .hm-legend-cell { width: 12px; height: 12px; border-radius: 2px; }
+
+    /* ------------------------------------------------------------------ */
+    /* Streaks leaderboard                                                  */
+    /* ------------------------------------------------------------------ */
+    .streak-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.875rem;
+    }
+    .streak-row:last-child { border-bottom: none; }
+    .streak-badge {
+      background: rgba(124,58,237,0.2); color: var(--accent2);
+      padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Timetable                                                            */
+    /* ------------------------------------------------------------------ */
+    .tt-row {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.875rem;
+    }
+    .tt-row:last-child { border-bottom: none; }
+    .tt-day { min-width: 70px; color: var(--cyan); font-size: 0.78rem; font-weight: 600; }
+    .tt-time { color: var(--muted); min-width: 105px; font-size: 0.78rem; }
+    .tt-label { flex: 1; color: var(--text); }
+
+    /* ------------------------------------------------------------------ */
+    /* Toast                                                                */
+    /* ------------------------------------------------------------------ */
+    #toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.75rem 1.1rem;
+      font-size: 0.875rem; box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      transition: opacity 0.3s; opacity: 0; pointer-events: none; z-index: 9999;
+      max-width: 300px;
+    }
+    #toast.show { opacity: 1; }
+    #toast.success { border-left: 3px solid var(--green); }
+    #toast.error   { border-left: 3px solid var(--red); }
+
+    /* ------------------------------------------------------------------ */
+    /* Misc                                                                 */
+    /* ------------------------------------------------------------------ */
+    .section-heading {
+      font-size: 1rem; font-weight: 700; color: var(--text);
+      margin: 1.5rem 0 0.8rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .section-heading::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 1.5rem 0; }
+    .spin { animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ==================== Auth Overlay ==================== -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <h1>Lakshya</h1>
+      <p>Your personal goal engine</p>
+    </div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="showTab('login')" id="tab-login">Login</div>
+      <div class="auth-tab" onclick="showTab('register')" id="tab-register">Register</div>
+    </div>
+
+    <div id="auth-error" class="auth-error"></div>
+
+    <!-- Login -->
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-user" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem">Login</button>
+    </form>
+
+    <!-- Register -->
+    <form id="register-form" style="display:none" onsubmit="doRegister(event)">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="reg-user" autocomplete="username" required minlength="3" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-pass" autocomplete="new-password" required minlength="4" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem">Create Account</button>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== App ==================== -->
+<div id="app">
+  <header>
+    <div class="header-logo">LAKSHYA</div>
+    <div class="header-user">
+      <span id="header-username"></span>
+      <button class="btn btn-sm" style="background:var(--border);color:var(--text)" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Stat cards -->
+    <div class="grid-3" style="margin-top:0.5rem">
+      <div class="card">
+        <div class="stat-val" id="stat-total">-</div>
+        <div class="stat-label">Total Goals</div>
+      </div>
+      <div class="card">
+        <div class="stat-val" id="stat-done" style="color:var(--green)">-</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="card">
+        <div class="stat-val" id="stat-streak" style="color:var(--yellow)">-</div>
+        <div class="stat-label">Top Streak (days)</div>
+      </div>
+    </div>
+
+    <!-- Heatmap + Streaks -->
+    <div class="grid-2" style="margin-top:1.2rem">
+      <div class="card">
+        <div class="card-title">Activity Heatmap (last 30 days) <span onclick="loadHeatmap()">Refresh</span></div>
+        <div id="heatmap-grid" class="heatmap-grid"></div>
+        <div class="hm-legend">
+          Less
+          <div class="hm-legend-cell" style="background:var(--border)"></div>
+          <div class="hm-legend-cell" style="background:#166534"></div>
+          <div class="hm-legend-cell" style="background:#15803d"></div>
+          <div class="hm-legend-cell" style="background:#16a34a"></div>
+          <div class="hm-legend-cell" style="background:#4ade80"></div>
+          More
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Streak Leaderboard <span onclick="loadStreaks()">Refresh</span></div>
+        <div id="streaks-list"></div>
+      </div>
+    </div>
+
+    <!-- Goals -->
+    <div class="section-heading">Goals</div>
+    <div class="card">
+      <div class="card-title">
+        Add New Goal
+      </div>
+      <form class="add-form" onsubmit="addGoal(event)">
+        <div class="form-group">
+          <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Title</label>
+          <input type="text" id="new-title" placeholder="Goal title..." required style="min-width:200px" />
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Description</label>
+          <input type="text" id="new-desc" placeholder="Optional..." style="min-width:140px" />
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Type</label>
+          <select id="new-type">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end">
+          <button type="submit" class="btn btn-primary">+ Add Goal</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:0.8rem">
+      <div class="card-title">
+        Your Goals
+        <span onclick="loadGoals()">Refresh</span>
+      </div>
+      <!-- Filter bar -->
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.8rem;flex-wrap:wrap">
+        <select id="filter-type" onchange="loadGoals()" style="padding:0.35rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem">
+          <option value="">All Types</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+        <select id="filter-status" onchange="loadGoals()" style="padding:0.35rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Type</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Progress</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="goals-tbody">
+            <tr><td colspan="6" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Timetable -->
+    <div class="section-heading">Timetable</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Schedule <span onclick="loadTimetable()">Refresh</span></div>
+        <div id="tt-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Add Slot</div>
+        <form onsubmit="addTTSlot(event)">
+          <div class="form-group" style="margin-bottom:0.7rem">
+            <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Day</label>
+            <select id="tt-day" style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)">
+              <option value="0">Monday</option>
+              <option value="1">Tuesday</option>
+              <option value="2">Wednesday</option>
+              <option value="3">Thursday</option>
+              <option value="4">Friday</option>
+              <option value="5">Saturday</option>
+              <option value="6">Sunday</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.7rem">
+            <div class="form-group" style="flex:1;margin-bottom:0">
+              <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Start (HH:MM)</label>
+              <input type="text" id="tt-start" placeholder="09:00" pattern="\d{2}:\d{2}" required style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)" />
+            </div>
+            <div class="form-group" style="flex:1;margin-bottom:0">
+              <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">End (HH:MM)</label>
+              <input type="text" id="tt-end" placeholder="10:30" pattern="\d{2}:\d{2}" required style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0.8rem">
+            <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Label</label>
+            <input type="text" id="tt-label" placeholder="e.g. Math class" required style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)" />
+          </div>
+          <button type="submit" class="btn btn-primary">+ Add Slot</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Finance Tracker -->
+    <div class="section-heading">Finance Tracker</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Recent Transactions <span onclick="loadFinance()">Refresh</span></div>
+        <div class="table-wrap">
+          <table style="font-size:0.8rem">
+            <thead>
+              <tr><th>Date</th><th>Category</th><th>Amount</th></tr>
+            </thead>
+            <tbody id="finance-tbody">
+              <tr><td colspan="3" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Add Transaction</div>
+        <form onsubmit="addFinance(event)">
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.7rem">
+            <div class="form-group" style="flex:1;margin-bottom:0">
+              <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Type</label>
+              <select id="fin-type" style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;margin-bottom:0">
+              <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Amount (Rs.)</label>
+              <input type="number" step="0.01" id="fin-amount" required style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)" />
+            </div>
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.7rem">
+            <div class="form-group" style="flex:1;margin-bottom:0">
+              <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Category</label>
+              <select id="fin-category" style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)">
+                <option value="food">Food</option>
+                <option value="transport">Transport</option>
+                <option value="study">Study</option>
+                <option value="fun">Fun</option>
+                <option value="health">Health</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:2;margin-bottom:0">
+              <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px">Note (optional)</label>
+              <input type="text" id="fin-note" style="width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">+ Add</button>
+        </form>
+        
+        <div id="fin-summary" style="margin-top:1rem;font-size:0.8rem;border-top:1px solid var(--border);padding-top:0.8rem">
+          <!-- Summary inserted here -->
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script>
+  /* ============================================================
+     Config
+     ============================================================ */
+  const API = '';   // same origin; change to 'http://localhost:8000' for dev
+
+  /* ============================================================
+     Helpers
+     ============================================================ */
+  function token() { return localStorage.getItem('lk_token'); }
+
+  async function api(method, path, body) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (token()) opts.headers['Authorization'] = 'Bearer ' + token();
+    if (body !== undefined) opts.body = JSON.stringify(body);
+    const res = await fetch(API + path, opts);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || res.statusText);
+    return data;
+  }
+
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + type;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ''; }, 3500);
+  }
+
+  /* ============================================================
+     Auth
+     ============================================================ */
+  function showTab(tab) {
+    document.getElementById('login-form').style.display    = tab === 'login' ? '' : 'none';
+    document.getElementById('register-form').style.display = tab === 'register' ? '' : 'none';
+    document.getElementById('tab-login').className    = 'auth-tab' + (tab === 'login' ? ' active' : '');
+    document.getElementById('tab-register').className = 'auth-tab' + (tab === 'register' ? ' active' : '');
+    document.getElementById('auth-error').style.display = 'none';
+  }
+
+  function setAuthError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function doLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('login-user').value.trim();
+    const password = document.getElementById('login-pass').value;
+    try {
+      const data = await api('POST', '/api/auth/login', { username, password });
+      localStorage.setItem('lk_token', data.access_token);
+      localStorage.setItem('lk_user', username);
+      enterApp(username);
+    } catch(err) {
+      setAuthError(err.message);
+    }
+  }
+
+  async function doRegister(e) {
+    e.preventDefault();
+    const username = document.getElementById('reg-user').value.trim();
+    const password = document.getElementById('reg-pass').value;
+    try {
+      await api('POST', '/api/auth/register', { username, password });
+      showToast('Account created! Please log in.', 'success');
+      showTab('login');
+      document.getElementById('login-user').value = username;
+    } catch(err) {
+      setAuthError(err.message);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('lk_token');
+    localStorage.removeItem('lk_user');
+    document.getElementById('auth-overlay').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+
+  function enterApp(username) {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('header-username').textContent = '@' + username;
+    loadAll();
+  }
+
+  /* ============================================================
+     Boot: check for existing token
+     ============================================================ */
+  (async function boot() {
+    const tok = token();
+    if (!tok) return;
+    try {
+      const me = await api('GET', '/api/auth/me');
+      enterApp(me.username);
+    } catch(_) {
+      localStorage.removeItem('lk_token');
+    }
+  })();
+
+  /* ============================================================
+     Load everything
+     ============================================================ */
+  function loadAll() {
+    loadGoals();
+    loadHeatmap();
+    loadStreaks();
+    loadTimetable();
+    loadFinance();
+  }
+
+  /* ============================================================
+     Goals
+     ============================================================ */
+  let _goals = [];
+
+  async function loadGoals() {
+    const type   = document.getElementById('filter-type').value;
+    const status = document.getElementById('filter-status').value;
+    let qs = [];
+    if (type)   qs.push('type='   + type);
+    if (status) qs.push('status=' + status);
+    const path = '/api/goals' + (qs.length ? '?' + qs.join('&') : '');
+    try {
+      _goals = await api('GET', path);
+      renderGoals();
+      updateStats();
+    } catch(err) {
+      showToast('Failed to load goals: ' + err.message, 'error');
+    }
+  }
+
+  function renderGoals() {
+    const tbody = document.getElementById('goals-tbody');
+    if (!_goals.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">No goals yet. Add one above!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = _goals.map(g => {
+      const typeCls   = 'badge badge-' + g.type;
+      const statusCls = 'badge badge-' + (g.status === 'completed' ? 'done' : 'pending');
+      const pct = g.progress || 0;
+      const progressHtml = `
+        <div style="display:flex;align-items:center;gap:0.4rem">
+          <div class="progress-bar-wrap" style="flex:1">
+            <div class="progress-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <span style="font-size:0.72rem;color:var(--muted);min-width:28px">${pct}%</span>
+        </div>`;
+      return `<tr>
+        <td style="color:var(--muted)">${g.id}</td>
+        <td><span class="${typeCls}">${g.type}</span></td>
+        <td>
+          <div style="font-weight:600">${esc(g.title)}</div>
+          ${g.description ? `<div style="font-size:0.75rem;color:var(--muted)">${esc(g.description)}</div>` : ''}
+        </td>
+        <td><span class="${statusCls}">${g.status}</span></td>
+        <td style="min-width:120px">${progressHtml}</td>
+        <td>
+          <div class="actions">
+            ${g.status !== 'completed' ? `<button class="btn btn-sm btn-success" onclick="markDone(${g.id})" title="Mark done">[v]</button>` : ''}
+            <button class="btn btn-sm" style="background:var(--border);color:var(--text)" onclick="promptProgress(${g.id})" title="Set progress">%</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})" title="Delete">X</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function addGoal(e) {
+    e.preventDefault();
+    const title = document.getElementById('new-title').value.trim();
+    const desc  = document.getElementById('new-desc').value.trim();
+    const type  = document.getElementById('new-type').value;
+    try {
+      await api('POST', '/api/goals', { title, description: desc, type });
+      document.getElementById('new-title').value = '';
+      document.getElementById('new-desc').value  = '';
+      showToast('Goal added!');
+      loadGoals();
+      loadHeatmap();
+    } catch(err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  async function markDone(id) {
+    try {
+      await api('PUT', `/api/goals/${id}/done`);
+      showToast('Goal marked complete!');
+      loadGoals(); loadStreaks(); loadHeatmap();
+    } catch(err) { showToast(err.message, 'error'); }
+  }
+
+  function promptProgress(id) {
+    const pct = prompt('Set progress % (0-100):');
+    if (pct === null) return;
+    const n = parseInt(pct, 10);
+    if (isNaN(n) || n < 0 || n > 100) { showToast('Enter a number between 0 and 100', 'error'); return; }
+    api('PUT', `/api/goals/${id}/progress`, { percent: n })
+      .then(() => { showToast(`Progress set to ${n}%`); loadGoals(); })
+      .catch(err => showToast(err.message, 'error'));
+  }
+
+  async function deleteGoal(id) {
+    if (!confirm('Delete this goal?')) return;
+    try {
+      await api('DELETE', `/api/goals/${id}`);
+      showToast('Goal deleted.', 'error');
+      loadGoals();
+    } catch(err) { showToast(err.message, 'error'); }
+  }
+
+  function updateStats() {
+    document.getElementById('stat-total').textContent = _goals.length;
+    document.getElementById('stat-done').textContent  = _goals.filter(g => g.status === 'completed').length;
+  }
+
+  /* ============================================================
+     Heatmap
+     ============================================================ */
+  async function loadHeatmap() {
+    try {
+      const res = await api('GET', '/api/goals/heatmap?days=30');
+      renderHeatmap(res.data || {});
+    } catch(err) { /* silent */ }
+  }
+
+  function renderHeatmap(data) {
+    const grid = document.getElementById('heatmap-grid');
+    const today = new Date();
+    let html = '';
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const cnt = Math.min(data[key] || 0, 4);
+      html += `<div class="hm-cell" data-count="${cnt}" title="${key}: ${data[key] || 0} completions"></div>`;
+    }
+    grid.innerHTML = html;
+  }
+
+  /* ============================================================
+     Streaks
+     ============================================================ */
+  async function loadStreaks() {
+    try {
+      const streaks = await api('GET', '/api/goals/streaks');
+      renderStreaks(streaks);
+      const top = streaks.length ? streaks[0].streak : 0;
+      document.getElementById('stat-streak').textContent = top;
+    } catch(err) { /* silent */ }
+  }
+
+  function renderStreaks(streaks) {
+    const el = document.getElementById('streaks-list');
+    if (!streaks.length) {
+      el.innerHTML = '<div class="empty">No active streaks yet.</div>';
+      return;
+    }
+    el.innerHTML = streaks.slice(0, 8).map((s, idx) => `
+      <div class="streak-row">
+        <div>
+          <span style="color:var(--muted);margin-right:0.5rem;font-size:0.75rem">#${idx+1}</span>
+          ${esc(s.title)}
+        </div>
+        <span class="streak-badge">${s.streak}d</span>
+      </div>`).join('');
+  }
+
+  /* ============================================================
+     Timetable
+     ============================================================ */
+  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  async function loadTimetable() {
+    try {
+      const slots = await api('GET', '/api/timetable');
+      renderTimetable(slots);
+    } catch(err) { /* silent */ }
+  }
+
+  function renderTimetable(slots) {
+    const el = document.getElementById('tt-list');
+    if (!slots.length) {
+      el.innerHTML = '<div class="empty">No slots yet.</div>';
+      return;
+    }
+    el.innerHTML = slots.map(s => `
+      <div class="tt-row">
+        <span class="tt-day">${DAY_NAMES[s.day]}</span>
+        <span class="tt-time">${s.start} - ${s.end}</span>
+        <span class="tt-label">${esc(s.label)}</span>
+        <button class="btn btn-sm btn-danger" onclick="deleteTTSlot(${s.id})">X</button>
+      </div>`).join('');
+  }
+
+  async function addTTSlot(e) {
+    e.preventDefault();
+    const day_of_week = parseInt(document.getElementById('tt-day').value);
+    const start_time  = document.getElementById('tt-start').value.trim();
+    const end_time    = document.getElementById('tt-end').value.trim();
+    const label       = document.getElementById('tt-label').value.trim();
+    try {
+      await api('POST', '/api/timetable', { day_of_week, start_time, end_time, label });
+      showToast('Slot added!');
+      document.getElementById('tt-start').value = '';
+      document.getElementById('tt-end').value   = '';
+      document.getElementById('tt-label').value = '';
+      loadTimetable();
+    } catch(err) { showToast('Error: ' + err.message, 'error'); }
+  }
+
+  async function deleteTTSlot(id) {
+    if (!confirm('Remove this slot?')) return;
+    try {
+      await api('DELETE', `/api/timetable/${id}`);
+      showToast('Slot removed.', 'error');
+      loadTimetable();
+    } catch(err) { showToast(err.message, 'error'); }
+  }
+
+  /* ============================================================
+     Util
+     ============================================================ */
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+  /* ============================================================
+     Finance
+     ============================================================ */
+  async function loadFinance() {
+    try {
+      const { status, transactions, message } = await api('GET', '/api/finance');
+      if (status === 'stub') {
+        document.getElementById('finance-tbody').innerHTML = `<tr><td colspan="3" class="empty">${message}</td></tr>`;
+        return;
+      }
+      
+      const tbody = document.getElementById('finance-tbody');
+      if (!transactions || !transactions.length) {
+        tbody.innerHTML = '<tr><td colspan="3" class="empty">No transactions this month.</td></tr>';
+      } else {
+        tbody.innerHTML = transactions.map(t => {
+          const c = t.type === 'income' ? 'var(--green)' : 'var(--red)';
+          const sign = t.type === 'income' ? '+' : '-';
+          return `<tr>
+            <td style="color:var(--muted)">${t.date.substring(8,10)}</td>
+            <td>${esc(t.category)}</td>
+            <td style="color:${c};font-weight:600">${sign}Rs. ${t.amount}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      // Load summary
+      const { summary } = await api('GET', '/api/finance/summary');
+      if (summary) {
+        let h = `<div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+          <div><span style="color:var(--muted)">In:</span> <span style="color:var(--green)">Rs. ${summary.total_income}</span></div>
+          <div><span style="color:var(--muted)">Out:</span> <span style="color:var(--red)">Rs. ${summary.total_expenses}</span></div>
+          <div><span style="color:var(--muted)">Net:</span> <span>Rs. ${summary.net}</span></div>
+        </div>`;
+        document.getElementById('fin-summary').innerHTML = h;
+      }
+    } catch(err) {
+      document.getElementById('finance-tbody').innerHTML = `<tr><td colspan="3" class="empty">Error: ${err.message}</td></tr>`;
+    }
+  }
+
+  async function addFinance(e) {
+    e.preventDefault();
+    const txn_type = document.getElementById('fin-type').value;
+    const amount = parseFloat(document.getElementById('fin-amount').value);
+    const category = document.getElementById('fin-category').value;
+    const note = document.getElementById('fin-note').value.trim();
+
+    try {
+      await api('POST', '/api/finance', { txn_type, amount, category, note });
+      showToast('Transaction added!');
+      e.target.reset();
+      loadFinance();
+    } catch(err) {
+      showToast('Failed to add: ' + err.message, 'error');
+    }
+  }
+
+</script>
+</body>
+</html>

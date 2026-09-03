@@ -28,6 +28,10 @@ Most goal-tracking apps are bloated, subscription-walled, and built for phones â
 | **Dancing Cat Animation** | A cat dances in your terminal when you complete a goal |
 | **Focus Timer (Pomodoro)** | Built-in countdown timer with live progress bar |
 | **Timetable Manager** | Add your college schedule and detect goal-time clashes |
+| **Finance Tracker** | Track income, expenses, budgets, and link savings to goals |
+| **Windows Reminders** | Schedule Task Scheduler popup reminders (no daemon needed) |
+| **Weekly Review** | Auto-generate beautiful terminal reports of your week |
+| **Full Web Dashboard**| Start the included FastAPI server for a web UI view |
 | **Export** | Export all goals to CSV or Markdown |
 | **Local SQLite Storage** | All data stored in `~/.lakshya/goals.db` â€” 100% private |
 
@@ -178,6 +182,59 @@ lakshya> tt rm 1
 ```
 
 Day mapping: `0=Mon  1=Tue  2=Wed  3=Thu  4=Fri  5=Sat  6=Sun`
+
+---
+
+## Finance Tracker
+
+Track income, expenses, budgets, and link savings to your main goals.
+
+```bash
+lakshya> finance add       # Add an expense or income
+lakshya> finance ls        # View all transactions this month
+lakshya> finance budget    # Set a monthly limit for a category (e.g. food)
+lakshya> finance summary   # Rich visual breakdown of budget usage
+lakshya> finance goal      # Create a linked savings goal
+lakshya> finance rm 1      # Delete transaction #1
+```
+
+---
+
+## Windows Reminders
+
+Schedule recurring desktop notifications using Windows Task Scheduler (no background process needed).
+
+```bash
+lakshya> remind add        # Schedule a new toast notification
+lakshya> remind ls         # List active scheduled tasks
+lakshya> remind rm 1       # Delete a reminder
+lakshya> remind test       # Fire a test notification immediately
+```
+
+---
+
+## Weekly & Monthly Reviews
+
+Auto-generate beautiful terminal reports summarizing your progress.
+
+```bash
+lakshya> review weekly     # 7-day heatmap, streak summary, best day
+lakshya> review monthly    # 30-day top goals, gap days, completion rate
+```
+*(Both commands let you save the output to a text file.)*
+
+---
+
+## Web Dashboard (FastAPI)
+
+Lakshya includes a complete REST API and vanilla JS web dashboard.
+
+```bash
+# From the project root:
+cd web
+.\run.bat
+```
+Then open `http://localhost:8000` in your browser to see your goals, streaks, and heatmap on the web!
 
 ---
 
