@@ -8,6 +8,8 @@ No internet. No subscriptions. No distractions. Just you and your goals.
 <!-- Add your screenshots in an 'assets' folder and uncomment this: 
 ![CLI Dashboard](assets/cli-screenshot.png) 
 -->
+<img width="1478" height="771" alt="image" src="https://github.com/user-attachments/assets/e1267d4f-fab8-4aaa-ae02-d6e947c73a19" />
+
 
 ---
 
