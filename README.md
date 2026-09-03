@@ -58,9 +58,6 @@ This will create a Python virtual environment, install all dependencies, and reg
 ### 3. Activate the environment & Run
 You must activate the virtual environment before running the tool for the first time in a new terminal session.
 ```powershell
-# If you get a permission error activating the venv, run this once:
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-
 # Activate the venv
 .\venv\Scripts\Activate.ps1
 
