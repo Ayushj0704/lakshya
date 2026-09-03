@@ -5,6 +5,10 @@
 Lakshya is a fast, keyboard-first, terminal-based productivity engine built in Python.
 No internet. No subscriptions. No distractions. Just you and your goals.
 
+<!-- Add your screenshots in an 'assets' folder and uncomment this: 
+![CLI Dashboard](assets/cli-screenshot.png) 
+-->
+
 ---
 
 ## Why Lakshya?
@@ -39,25 +43,32 @@ Most goal-tracking apps are bloated, subscription-walled, and built for phones �
 
 ## Installation
 
-### One-time setup (like `npm install`)
-
+### 1. Clone the repository
 ```powershell
-# 1. Clone or open the project folder
-cd path\to\gola
+git clone https://github.com/Ayushj0704/lakshya.git
+cd lakshya
+```
 
-# 2. Run the installer (creates venv, installs deps, registers global command)
+### 2. Run the one-click installer
+This will create a Python virtual environment, install all dependencies, and register the global command.
+```powershell
 .\install.bat
+```
 
-# 3. Activate the virtual environment
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
-& .\venv\Scripts\Activate.ps1
+### 3. Activate the environment & Run
+You must activate the virtual environment before running the tool for the first time in a new terminal session.
+```powershell
+# If you get a permission error activating the venv, run this once:
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 
-# 4. Launch!
+# Activate the venv
+.\venv\Scripts\Activate.ps1
+
+# Launch the interactive shell!
 lakshya
 ```
 
-> After the venv is activated, you can just type `lakshya` from anywhere — no `.\` prefix needed.
-
+> **Tip:** After the venv is activated, you can type `lakshya` from any folder on your computer.
 ---
 
 ## Usage
@@ -264,36 +275,31 @@ lakshya> heatmapp   →  Tip: Did you mean 'heatmap'?
 gola/
 ├── lakshya.py        # CLI commands, UI, animations (Rich + Click)
 ├── db.py             # SQLite data access layer (goals + timetable)
+├── finance_db.py     # SQLite layer for Finance Tracker
+├── reminders_db.py   # Windows Task Scheduler integration
+├── web/              # FastAPI Web Dashboard 
 ├── setup.py          # Package config for global `lakshya` command
 ├── install.bat       # One-click installer
 ├── lakshya.bat       # Quick runner (no global install needed)
-├── README.md         # This file
-└── INTERVIEW_PREP.md # Interview Q&A guide for CV
+└── README.md         # This file
 ```
 
-Data is stored at: `C:\Users\<you>\.lakshya\goals.db`
+Data is stored at: `~/.lakshya/goals.db` (usually `C:\Users\<you>\.lakshya\goals.db`)
 
 ---
 
 ## Tech Stack
 
 - **Python 3.8+**
-- **[Click](https://click.palletsprojects.com/)** — CLI framework (commands, arguments, prompts)
-- **[Rich](https://github.com/Textar/rich)** — Terminal UI (tables, panels, spinners, progress bars, live rendering)
-- **SQLite** (via Python's built-in `sqlite3`) — local database, zero config
+- **[FastAPI](https://fastapi.tiangolo.com/)** — Web API backend
+- **[Click](https://click.palletsprojects.com/)** — CLI framework
+- **[Rich](https://github.com/Textar/rich)** — Terminal UI (tables, panels, spinners, progress bars)
+- **SQLite** — local database, zero config
 
 ---
 
-## Why I Built This
+## Motivation
 
 > "Most goal apps are designed for people who want to feel productive. Lakshya is built for people who want to **be** productive."
 
-I built Lakshya because every existing tool either required a subscription, didn't work offline, or had too much clutter. By moving goal management to the terminal, it becomes a frictionless part of a developer's existing workflow — no browser tabs, no ads, no accounts.
-
----
-
-## CV Description
-
-> **Lakshya** — Terminal Productivity Engine *(Python, SQLite, Click, Rich)*
->
-> Built a full-featured CLI application with an interactive REPL shell, streak tracking, GitHub-style activity heatmaps, a Pomodoro focus timer, college timetable manager with clash detection, and animated goal completion. Data persisted locally via SQLite with a clean data-access abstraction layer.
+I built Lakshya because existing tools require subscriptions, don't work offline, or have too much clutter. By moving goal management to the terminal, it becomes a frictionless part of a developer's existing workflow — no browser tabs, no ads, no accounts.
